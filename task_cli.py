@@ -2,6 +2,11 @@ import sys
 import json
 import os
 from datetime import datetime
+import pyfiglet
+
+def display_title():
+    title = pyfiglet.figlet_format("Task Tracker")
+    print(title)
 
 TASKS_FILE = "tasks.json"
 
@@ -22,6 +27,7 @@ def save_tasks(tasks):
 
 
 def main():
+    display_title()
     if len(sys.argv) < 2:
         print("Usage: task-cli <command> [arguments]")
         return
