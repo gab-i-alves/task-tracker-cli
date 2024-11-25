@@ -2,6 +2,7 @@ bin/
 include/
 lib/*
 lib64/*
+tasks.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
