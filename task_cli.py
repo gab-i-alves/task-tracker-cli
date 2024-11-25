@@ -1,8 +1,16 @@
+#!/usr/bin/env python3
+
 import sys
 import json
 import os
 from datetime import datetime
 import pyfiglet
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
+
+# Importing necessary modules for colors and formatting
+console = Console()
 
 # Three classes: Task, TaskManager and TaskCLI
 
@@ -109,10 +117,22 @@ class TaskManager:
         """Lists tasks, optionally filtered by status."""
         filtered_tasks = self.tasks if not status else [task for task in self.tasks if task.status == status]
         if filtered_tasks:
+            table = Table(title="Tasks", header_style="bold magenta")
+            table.add_column("ID", style="bold cyan")
+            table.add_column("Description", style="bold yellow")
+            table.add_column("Status", style="bold green")
+
             for task in filtered_tasks:
-                print(f"ID: {task.id}, Description: {task.description}, Status: {task.status}")
+                status_icon = (
+                    "✔️" if task.status == "done"
+                    else "⏳" if task.status == "in-progress"
+                    else "❌"
+                )
+                table.add_row(str(task.id), task.description, f"{status_icon} {task.status}")
+
+            console.print(table)
         else:
-            print("No tasks found" + (f" with status '{status}'" if status else ""))
+            console.print("No tasks found", style="bold red")
 
     def _find_task_by_id(self, task_id):
         """Finds a task by its ID."""
@@ -128,19 +148,40 @@ class TaskCLI:
     def display_title(self):
         """Displays the title of the CLI."""
         title = pyfiglet.figlet_format("Task Tracker")
-        print(title)
+        console.print(title, style="bold blue")
+
+    def display_help(self):
+        """Displays available commands and their descriptions."""
+        table = Table(title="Commands", header_style="bold magenta")
+        table.add_column("Command", style="bold cyan")
+        table.add_column("Description", style="bold yellow")
+
+        commands = [
+            ("add <description>", "Adds a new task"),
+            ("update <id> <description>", "Updates an existing task"),
+            ("delete <id>", "Deletes a task by ID"),
+            ("mark-in-progress <id>", "Marks a task as in-progress"),
+            ("mark-done <id>", "Marks a task as done"),
+            ("list", "Lists all tasks"),
+        ]
+
+        for command, description in commands:
+            table.add_row(command, description)
+
+        console.print(table)
+
 
     def handle_command(self, args):
         """Parses and executes CLI commands."""
         if not args:
-            print("Usage: task-cli <command> [arguments]")
+            self.display_help()
             return
 
         command = args[0]
         params = args[1:]
 
         if command == "add" and params:
-            self.manager.add_task(params[0])
+            self.manager.add_task(" ".join(params))
         elif command == "update" and len(params) >= 2:
             self.manager.update_task(int(params[0]), params[1])
         elif command == "delete" and len(params) >= 1:
@@ -152,13 +193,18 @@ class TaskCLI:
         elif command == "list":
             self.manager.list_tasks(params[0] if params else None)
         else:
-            print(f"Unknown command or incorrect usage: {command}")
+            console.print(f"Unknown command: {command}", style="bold red")
 
 
 def main():
     cli = TaskCLI()
-    cli.display_title()
-    cli.handle_command(sys.argv[1:])
+    args = sys.argv[1:]
+
+    if not args:
+        cli.display_title()
+        cli.display_help()
+    else:
+        cli.handle_command(args)
 
 
 if __name__ == "__main__":
