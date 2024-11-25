@@ -115,7 +115,9 @@ class TaskManager:
 
     def list_tasks(self, status=None):
         """Lists tasks, optionally filtered by status."""
-        filtered_tasks = self.tasks if not status else [task for task in self.tasks if task.status == status]
+        filtered_tasks = (
+            self.tasks if not status else [task for task in self.tasks if task.status == status]
+        )
         if filtered_tasks:
             table = Table(title="Tasks", header_style="bold magenta")
             table.add_column("ID", style="bold cyan")
